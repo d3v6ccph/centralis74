@@ -1,0 +1,10 @@
+application/logs/log-2015-03-30.php
+
+upload
+uploads/*
+
+application/config/config.php
+application/config/database.php
+
+sql
+sql/*

@@ -1,0 +1,26 @@
+.m-input.auto-height {
+    height: auto;
+}
+
+.normal-case-placeholder::placeholder {
+    text-transform: none;
+}
+
+.clear-search {
+    visibility: hidden;
+}
+
+.clear-search i {
+    cursor: pointer;
+    transition: color 150ms;
+}
+
+.clear-search i:hover {
+    font-weight: bold;
+    color: #343434;
+}
+
+.item-list-cb {
+    display: block;
+    margin: 0;
+}

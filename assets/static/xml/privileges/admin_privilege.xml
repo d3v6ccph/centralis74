@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<list>
+    <privilege>
+		<data>new</data>
+		<data>edit</data>
+		<data>delete</data>
+		<data>save</data>
+		<data>update</data>
+		<data>assign</data>
+		<data>approve</data>
+		<data>close</data>
+		<data>restore</data>
+	</privilege>
+</list>
