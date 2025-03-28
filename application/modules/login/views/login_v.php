@@ -105,6 +105,7 @@
                 </div>
             <div class="m-login__signin">
               <div class="m-login__head">
+                <h5 class="m-login__title mb-3">CENTRAL INVENTORY SYSTEM</h5>
                 <h3 class="m-login__title"> Sign In To GC&amp;C </h3>
               </div>
               <?php echo (validation_errors()) ; ?>
