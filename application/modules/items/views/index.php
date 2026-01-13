@@ -22,7 +22,7 @@
                                     <select id="select-warehouse" class="form-control"></select>
                                 </div>
                                 <div class="col-md-4 col-sm-12 pl-0">
-                                    <select id="select-items" class="form-control"></select>
+                                    <select id="select-items" class="form-control" multiple></select>
                                 </div>
                                 <div class="col-md-4 col-sm-12 pl-0">
                                     <button class="btn btn-info m-btn m-btn--custom m-btn--icon m-btn--air m-btn--pill" onclick="searchItem()">
@@ -118,6 +118,7 @@
         dom: "rtlip",
         data: [],
         columns: [
+            { title: "<input type='checkbox' id='selectAll'>", data: null, },
             { title: '', data: null, width: '5%', orderable: false,
                 render: function(data, type, row, meta){
                     var html = '';
@@ -166,26 +167,111 @@
             { title: 'Out', data: 'qty_out', width: '5%' },
             { title: 'Running Balance', data: 'running_bal', width: '13%' },
         ],
+        order: [],
+        columnDefs: [
+            {
+                targets: 0,
+                defaultContent: '', 
+                className: "select-checkbox", 
+                width: '2%', 
+                orderable: false, 
+                searchable: false,
+            }
+        ],
+        select: {
+            style: 'multi',
+            selector: 'td:first-child'
+        },
         buttons:[
             { 
                 extend: "pdfHtml5",
                 title: `Central Inventory - Generated Item as of ` + moment().format('LL'),
+                orientation: 'landscape',
+                pageSize: 'LEGAL',
                 exportOptions: {
-                    columns: [1,2,3,4,5,6,7,8]
+                    columns: [2,3,4,5,6,7,8,9]
                 },
-                customize: function (win) {
-                    var tblBody = win.content[1].table.body;
+                // customize: function (win) {
+                //     var tblBody = win.content[1].table.body;
 
-                    for (i = 1; i < tblBody.length; i++) {
-                        win.content[1].table.body[i][0].alignment = 'center';
-                        win.content[1].table.body[i][1].alignment = 'center';
-                        win.content[1].table.body[i][2].alignment = 'center';
-                        win.content[1].table.body[i][3].alignment = 'center';
-                        win.content[1].table.body[i][4].alignment = 'center';
-                        win.content[1].table.body[i][5].alignment = 'center';
-                        win.content[1].table.body[i][6].alignment = 'center';
-                        win.content[1].table.body[i][7].alignment = 'center';
-                    }
+                //     for (i = 1; i < tblBody.length; i++) {
+                //         win.content[1].table.body[i][0].alignment = 'center';
+                //         win.content[1].table.body[i][1].alignment = 'center';
+                //         win.content[1].table.body[i][2].alignment = 'center';
+                //         win.content[1].table.body[i][3].alignment = 'center';
+                //         win.content[1].table.body[i][4].alignment = 'center';
+                //         win.content[1].table.body[i][5].alignment = 'center';
+                //         win.content[1].table.body[i][6].alignment = 'center';
+                //         win.content[1].table.body[i][7].alignment = 'center';
+                //     }
+                // }
+                customize: function(doc) {
+                    // Set dynamic widths for all columns
+                    let columnWidths = new Array(doc.content[1].table.body[0].length).fill('*');
+
+                    // Define custom widths for specific columns (adjust index as needed)
+                    columnWidths[0] = '18%';
+                    columnWidths[1] = '10%';
+                    columnWidths[2] = '10%';
+                    columnWidths[4] = '15%';
+                    columnWidths[5] = '6%';
+                    columnWidths[6] = '6%';
+                    columnWidths[7] = '10%';
+                    
+                    // Set font size for header row
+                    doc.styles = doc.styles || {};
+                    doc.styles.tableHeader = doc.styles.tableHeader || {};
+                    doc.styles.tableHeader.fontSize = 9; 
+                    doc.styles.tableHeader.fillColor = '#2d4154'; // Set header background color
+
+                    // Apply column widths
+                    doc.content[1].table.widths = columnWidths;
+
+                    // Loop through table body and target specific column
+                    doc.content[1].table.body.forEach(function (row, rowIndex) {
+
+                        // Skip header row from all styles
+                        if (rowIndex === 0) { return; }
+
+                        let targetUppercase = [0, 1, 2, 3,  4]; // Columns to make uppercase
+                        let targetCenter = [1, 2, 4, 5, 6, 7]; // Columns to center align
+                        let targetRight = []; // Column to right align
+                        let removeSpecialChar = []; // Remove special characters from these columns like peso sign
+
+                        row.forEach((cell, columnIndex) => {
+                            if (!cell.text) { return; }
+
+                            // Set font size for other rows
+                            cell.style = { fontSize: 9 }; 
+
+                            // Background color for even and odd rows
+                            if (rowIndex % 2 === 0) {
+                                cell.fillColor = '#f9f9f9'; // Light gray for even rows
+                            } else {
+                                cell.fillColor = '#ffffff'; // White for odd rows
+                            }
+
+                            // Set text to uppercase for specific columns
+                            if (targetUppercase.includes(columnIndex)) {
+                                cell.text = cell.text.toUpperCase();
+                            }
+
+                            // Center align specific columns
+                            if (targetCenter.includes(columnIndex)) {
+                                cell.alignment = 'center';
+                            } 
+                            
+                            // Right align specific columns
+                            if (targetRight.includes(columnIndex)) {
+                                cell.alignment = 'right';
+                            }
+
+                            // Remove special characters from specific columns
+                            if (removeSpecialChar.includes(columnIndex)) {
+                                cell.text = cell.text.replace(/[^\w\s,.]/gi, '');
+                            }
+                        });
+                    });
                 }
             },
             { 
@@ -206,6 +292,40 @@
             },
         ],
     });
+
+    // Checkbox functions
+    // ==============================================================
+    $('#selectAll').on('change', function() {
+        if (this.checked) {
+            table.rows({page:'current'}).every(function() {
+                let data = this.data();
+                if(data.is_archive != 1) {
+                    this.select();
+                }
+            });
+        } else {
+            table.rows({page:'current'}).deselect();
+        }
+    });
+
+    table.on('select deselect', function() {
+        if (table.rows({ selected: true }).count() !== table.rows().count()) {
+            $('#selectAll').prop('checked', false);  
+        } else {
+            $('#selectAll').prop('checked', true);
+        }
+
+        const totalSelected = table.rows({page: 'current'}).data().toArray().length;
+        const selectedCount = table.rows({ selected: true, page: 'current' }).count();
+
+        $('#selectAll').prop('checked', selectedCount === totalSelected && totalSelected > 0);
+    });
+
+    // Uncheck checkbox when table is redrawn or page is changed
+    table.on('draw', function() {
+        $('#selectAll').prop('checked', false);
+    });
+    // ==============================================================
 
     function searchItem(){
         var sku = $("#select-items").val();

@@ -50,8 +50,15 @@
             $this->db->select('a.sku, a.inventory_sku, a.name, a.category_name, a.qty_in, a.qty_out, a.running_bal, b.name as warehouse, a.image_path, a.image');
             $this->db->join($this->companyTable.' as b', 'b.id = a.site_id', 'LEFT');
 
-            if(isset($post['sku']) && $post['sku']){
-                $this->db->where('sku', strtolower($post['sku']));
+            /*
+            * This code is intended for one item only
+            */
+            // if(isset($post['sku']) && $post['sku']){
+            //     $this->db->where('sku', strtolower($post['sku']));
+            // }
+
+            if (!empty($post['sku']) && is_array($post['sku'])) {
+                $this->db->where_in("sku", $post['sku']);
             }
 
             if(isset($post['warehouse']) && $post['warehouse']){

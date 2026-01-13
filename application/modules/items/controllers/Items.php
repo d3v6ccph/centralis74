@@ -14,6 +14,9 @@
             $this->core_layout->addJs("plugins/datatable-buttons/buttons.html5.min.js");
             $this->core_layout->addJs("js/dataTables.rowGroup.min.js");
 
+            // For datatable select checkbox
+            $this->core_layout->addJs("js/dataTables.select.min.js", true);
+
             $this->core_layout->setPageTitle("Masterfile - Items");
             $this->core_layout->setBodyClass("masterfile Items");
             $this->core_layout->setPrivilegeName("items");
