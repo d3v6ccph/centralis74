@@ -1,8 +1,119 @@
 <?php $actions = $this->core_layout->getCurrentActions(); ?>
+<style>
+    #filter, #sku_data {
+        padding: 30px;
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #d1d1d1;
+    }
+
+    .table-header {
+        background: #f4f5f8;
+        padding: 20px 0;
+        border-radius: 10px;
+        margin: 0 0 10px;
+    }
+
+    .col.qty {
+        max-width: 11%;
+    }
+
+    #sku_data * {
+        text-transform: uppercase;
+        font-size: 10px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Accordion Item */
+    #sku_data .accord_item:not(:last-child) {
+        margin: 0 0 10px 0;
+    }
+
+    /* Accordion Head */
+    #skusAccordion .accord_item-head {
+        background: #4895ef;
+        position: relative;
+        transition: .3s ease-in-out;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+    }
+
+    #skusAccordion .accord_item-head .accord_item-icon i { /** Open accord */
+        rotate: 0deg;
+    }
+
+    #skusAccordion .accord_item-head.collapsed .accord_item-icon i { /** Close accord */
+        rotate: -90deg;
+    }
+
+    #skusAccordion .accord_item-head span i {
+        color: #fff;
+        transition: .3s ease-in-out;
+    }
+
+    #skusAccordion .accord_item-head.collapsed {
+        background: #f4f5f8;
+        border-radius: 5px;
+        position: relative;
+    }
+
+    #skusAccordion .accord_item-icon {
+        position: absolute;
+        margin: auto;
+        top: 0;
+        bottom: 0;
+        max-height: max-content;
+    }
+
+    #skusAccordion .accord_item-head.collapsed div, #skusAccordion .accord_item-head.collapsed span i {
+        color: #737373;
+    }
+
+    #skusAccordion .accord_item-head div {
+        color: #fff;
+        font-weight: 500;
+    }
+
+    .accord_item-title {
+        flex-grow: 1;
+        max-width: 100%;
+    }
+
+    /* Accordion Body */
+    .accord_item-body {
+        background: #fff;
+        border: 1px solid #4895ef;
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+        overflow: hidden;
+    }
+    .accord_item-content .warehouse-data:nth-child(odd) {
+        background: #f4f5f8;
+    }
+
+    .warehouse-data div.col {
+        color: #737373;
+        font-weight: 400;
+    }
+
+    #warehouse-tbl-header {
+        padding: 15px;
+        background: #f4f5f8;
+    }
+
+    #sku_data .table-body {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+</style>
+
 <div class="m-content">
     <div class="row">
         <div class="col-md-12">
-            <div class="m-portlet m-portlet--mobile">
+            <div class="m-portlet m-portlet--mobile mb-4">
                 <div class="m-portlet__head">
                     <div class="m-portlet__head-caption">
                         <div class="m-portlet__head-title">
@@ -13,52 +124,186 @@
                     </div>
                     <div class="m-portlet__head-tools"></div>
                 </div>
-                <div class="m-portlet__body">
-                    <div class="row align-items-end mb-4">
-                        <div class="col-md-7">
-                            <div class="row align-items-end">
-                                <div class="col-md-4 col-sm-12">
-                                    <label for=""><strong>FILTER BY:</strong></label>
-                                    <select id="select-warehouse" class="form-control"></select>
-                                </div>
-                                <div class="col-md-4 col-sm-12 pl-0">
-                                    <select id="select-items" class="form-control"></select>
-                                </div>
-                                <div class="col-md-4 col-sm-12 pl-0">
-                                    <button class="btn btn-info m-btn m-btn--custom m-btn--icon m-btn--air m-btn--pill" onclick="searchItem()">
-                                        <span>
-                                            <i class="la la-search"></i>
-                                            <span>
-                                                Search
-                                            </span>
-                                        </span>
-                                    </button>
+            </div>
 
-                                    <button class="btn btn-warning m-btn m-btn--custom m-btn--icon m-btn--air m-btn--pill text-white" onclick="reset()">
-                                        <span>
-                                            <i class="flaticon-refresh"></i>
-                                            <span>
-                                                Clear
-                                            </span>
-                                        </span>
-                                    </button>
+            <div class="row">
+                <div class="col-3">
+                    <div id="filter">
+                        <div class="form-group mb-3">
+                            <label class="mb-0"><strong>FILTER BY:</strong></label>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <select id="select-warehouse" class="form-control" multiple></select>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <select id="select-items" class="form-control" multiple></select>
+                        </div>
+
+                        <button class="btn btn-info m-btn m-btn--custom m-btn--icon m-btn--air m-btn--pill" onclick="searchItem()">
+                            <span>
+                                <i class="la la-search"></i>
+                                <span>Search</span>
+                            </span>
+                        </button>
+
+                        <button class="btn btn-warning m-btn m-btn--custom m-btn--icon m-btn--air m-btn--pill text-white" onclick="reset()">
+                            <span>
+                                <i class="flaticon-refresh"></i>
+                                <span>Clear</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-9">
+                    <div id="sku_data">
+                        <div class="table-header">
+                            <div class="row align-items-center justify-content-between mx-0">
+                                <div class="col">
+                                    <h6 class="text-center mb-0">Stock Code</h6>
+                                </div>
+
+                                <div class="col">
+                                    <h6 class="text-center mb-0">Inventory Code</h6>
+                                </div>
+
+                                <div class="col">
+                                    <h6 class="text-center mb-0">Item Description</h6>
+                                </div>
+
+                                <div class="col">
+                                    <h6 class="text-center mb-0">Category</h6>
+                                </div>
+
+                                <div class="col qty">
+                                    <h6 class="text-center mb-0">Total In</h6>
+                                </div>
+
+                                <div class="col qty">
+                                    <h6 class="text-center mb-0">Total Out</h6>
+                                </div>
+
+                                <div class="col qty">
+                                    <h6 class="text-center mb-0">Total Balance</h6>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-5">
-                            <div class="d-flex align-items-center justify-content-end" style="gap: 5px">
-                                <button id="export-excel" class="btn btnNew btn-success m-btn m-btn--custom m-btn--icon m-btn--air" disabled>EXCEL</button>
-                                <button id="export-pdf" class="btn btnNew btn-success m-btn m-btn--custom m-btn--icon m-btn--air" disabled>PDF</button>
+
+                        <div class="table-body">
+                            <div v-if="skus_data.length" id="skusAccordion" class="m-accordion m-accordion--default m-accordion--solid m-accordion--section m-accordion--toggle-arrow" role="tablist">
+                                <div v-for="(item, index) in skus_data" :key="`acc-${index}`" class="accord_item">
+                                    <div :id="`ledger_head_${index}`" :href="`#ledger_body_${index}`" class="accord_item-head py-2 collapsed" role="tab" data-toggle="collapse" aria-expanded="false">
+                                        <span class="accord_item-icon ml-4"><i class="la la-angle-down"></i></span>
+                                        <span class="accord_item-title">
+                                            <div class="row align-items-center w-100 mx-0">
+                                                <div class="col text-center">{{ item.sku }}</div>
+                                                <div class="col text-center">{{ item.inventory_sku }}</div>
+                                                <div class="col text-center">{{ item.name }}</div>
+                                                <div class="col text-center">{{ item.category_name }}</div>
+                                                <div class="col qty text-right">{{ item.total_qty_in }}</div>
+                                                <div class="col qty text-right">{{ item.total_qty_out }}</div>
+                                                <div class="col qty text-right">{{ item.total_balance }}</div>
+                                            </div>
+                                        </span>
+                                    </div>
+
+                                    <div :id="`ledger_body_${index}`" class="accord_item-body collapse" role="tabpanel" data-parent="#skusAccordion">
+                                        <div class="accord_item-content">
+                                            <div id="warehouse-tbl-header" class="row align-items-center justify-content-between mx-0">
+                                                <div class="col">
+                                                    <h6 class="text-center mb-0">Warehouse Name</h6>
+                                                </div>
+
+                                                <div class="col">
+                                                    <h6 class="text-center mb-0">In</h6>
+                                                </div>
+
+                                                <div class="col">
+                                                    <h6 class="text-center mb-0">Out</h6>
+                                                </div>
+
+                                                <div class="col">
+                                                    <h6 class="text-center mb-0">Running Balance</h6>
+                                                </div>
+                                            </div>
+                                            
+                                            <template v-if="item.warehouses && item.warehouses.length">
+                                                <div v-for="(wh, whIndex) in item.warehouses" :key="`wh-${index}-${whIndex}`" class="warehouse-data py-3 row mx-0 align-items-center justify-content-between">
+                                                    <div class="col text-center">{{ wh.warehouse }}</div>
+                                                    <div class="col text-center">{{ wh.qty_in }}</div>
+                                                    <div class="col text-center">{{ wh.qty_out }}</div>
+                                                    <div class="col text-center">{{ wh.running_bal }}</div>
+                                                </div>
+                                            </template>
+
+                                            <template v-else>
+                                                <div class="alert m-alert--default mb-0" role="alert">
+                                                    <p class="text-center text-muted mb-0" style="font-weight: 600;">No warehouse available</p>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <template v-else>
+                                <div class="alert m-alert--default mb-0" role="alert">
+                                    <p class="text-center text-muted mb-0" style="font-weight: 600;">No item selected</p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+               
+            </div>
+
+            <!-- Display none -->
+            <div class="m-portlet__body d-none">
+                <div class="row align-items-end mb-4">
+                    <div class="col-md-7">
+                        <div class="row align-items-end">
+                            <div class="col-md-4 col-sm-12">
+                                <label for=""><strong>FILTER BY:</strong></label>
+                                <!-- <select id="select-warehouse" class="form-control" multiple></select> -->
+                            </div>
+                            <div class="col-md-4 col-sm-12 pl-0">
+                                <!-- <select id="select-items" class="form-control" multiple></select> -->
+                            </div>
+                            <div class="col-md-4 col-sm-12 pl-0">
+                                <button class="btn btn-info m-btn m-btn--custom m-btn--icon m-btn--air m-btn--pill" onclick="searchItem()">
+                                    <span>
+                                        <i class="la la-search"></i>
+                                        <span>
+                                            Search
+                                        </span>
+                                    </span>
+                                </button>
+
+                                <button class="btn btn-warning m-btn m-btn--custom m-btn--icon m-btn--air m-btn--pill text-white" onclick="reset()">
+                                    <span>
+                                        <i class="flaticon-refresh"></i>
+                                        <span>
+                                            Clear
+                                        </span>
+                                    </span>
+                                </button>
                             </div>
                         </div>
                     </div>
-
-                    <div class="m_datatable m-datatable m-datatable--default m-datatable--loaded m-datatable--scroll">
-                        <table class="table table-striped table-bordered" id="table-items" width="100%">
-                            <thead></thead>
-                            <tbody></tbody>
-                        </table>
+                    <div class="col-md-5">
+                        <div class="d-flex align-items-center justify-content-end" style="gap: 5px">
+                            <button id="export-excel" class="btn btnNew btn-success m-btn m-btn--custom m-btn--icon m-btn--air" disabled>EXCEL</button>
+                            <button id="export-pdf" class="btn btnNew btn-success m-btn m-btn--custom m-btn--icon m-btn--air" disabled>PDF</button>
+                        </div>
                     </div>
+                </div>
+
+                <div class="m_datatable m-datatable m-datatable--default m-datatable--loaded m-datatable--scroll">
+                    <table class="table table-striped table-bordered" id="table-items" width="100%">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -223,8 +468,10 @@
                     _csrf_token: _csrf_hash,
                 },
                 success: function(response){
-                    table.rows().invalidate();
-                    table.clear().rows.add(response.data).draw();
+                    vm_skus.skus_data = response.data;
+
+                    // table.rows().invalidate();
+                    // table.clear().rows.add(response.data).draw();
 
                     if(response.data.length > 0){
                         $("#export-excel").prop('disabled', false);
@@ -235,32 +482,6 @@
                     }
                 }
             });
-
-            // if(typeof sku != 'undefined' && sku){
-            //     $.ajax({
-            //         url: '<?//=base_url('items/get_item') ?>',
-            //         type: 'POST',
-            //         dataType: 'JSON',
-            //         data: {
-            //             sku: sku,
-            //             _csrf_token: _csrf_hash,
-            //         },
-            //         success: function(response){
-            //             table.rows().invalidate();
-            //             table.clear().rows.add(response.data).draw();
-    
-            //             if(response.data.length > 0){
-            //                 $("#export-excel").prop('disabled', false);
-            //                 $("#export-pdf").prop('disabled', false);
-            //             }else{
-            //                 $("#export-excel").prop('disabled', true);
-            //                 $("#export-pdf").prop('disabled', true);
-            //             }
-            //         }
-            //     })
-            // } else{
-            //     toastr.error('Please select an item first', 'Generate Report');
-            // }
         }else{
             toastr.error('Please select an item or a warehouse', 'Generate Report');
         }
@@ -280,4 +501,11 @@
 
         items();
     }
+
+    const vm_skus = new Vue({
+        el: "#sku_data",
+        data: {
+            skus_data: [],
+        }
+    });
 </script>

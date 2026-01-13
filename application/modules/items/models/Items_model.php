@@ -44,6 +44,86 @@
         }
 
         function get_item(){
+            $post = $this->input->post();
+
+            $this->db->select('
+                a.sku,
+                a.inventory_sku,
+                a.name,
+                a.category_name,
+                a.qty_in,
+                a.qty_out,
+                a.running_bal,
+                a.site_id,
+                b.name as warehouse,
+                a.image_path,
+                a.image
+            ');
+            $this->db->from($this->table.' as a');
+            $this->db->join($this->companyTable.' as b', 'b.id = a.site_id', 'LEFT');
+
+            // SKU filter (optional)
+            if (!empty($post['sku'])) {
+                $this->db->where_in('a.sku', array_map('strtolower', $post['sku']));
+            }
+
+            // Warehouse filter (ONLY if payload exists)
+            if (!empty($post['warehouse'])) {
+                $this->db->where_in('a.site_id', $post['warehouse']);
+            }
+
+            // Always exclude zero stock
+            $this->db->where('a.running_bal >', 0);
+
+
+            $query = $this->db->get();
+
+            $items = [];
+
+            foreach ($query->result() as $row) {
+                if (!isset($items[$row->sku])) {
+                    $items[$row->sku] = [
+                        'sku'           => $row->sku,
+                        'inventory_sku' => $row->inventory_sku,
+                        'name'          => $row->name,
+                        'category_name' => $row->category_name,
+                        'image_path'    => $row->image_path,
+                        'image'         => $row->image,
+                        'total_qty_in'  => 0,
+                        'total_qty_out' => 0,
+                        'total_balance' => 0,
+                        'warehouses'    => []
+                    ];
+                }
+
+                // totals per SKU
+                $items[$row->sku]['total_qty_in']  += $row->qty_in;
+                $items[$row->sku]['total_qty_out'] += $row->qty_out;
+                $items[$row->sku]['total_balance'] += $row->running_bal;
+
+                // warehouse list
+                $items[$row->sku]['warehouses'][] = [
+                    'site_id'     => $row->site_id,
+                    'warehouse'   => $row->warehouse,
+                    'qty_in'      => number_format($row->qty_in, 2),
+                    'qty_out'     => number_format($row->qty_out, 2),
+                    'running_bal' => number_format($row->running_bal, 2)
+                ];
+            }
+
+            // format totals
+            foreach ($items as &$item) {
+                $item['total_qty_in']  = number_format($item['total_qty_in'], 2);
+                $item['total_qty_out'] = number_format($item['total_qty_out'], 2);
+                $item['total_balance'] = number_format($item['total_balance'], 2);
+            }
+
+            return [
+                'data' => array_values($items)
+            ];
+        }
+
+        function get_item_old(){
             $result = array();
             $post = $this->input->post();
 
