@@ -75,7 +75,6 @@
             // Always exclude zero stock
             $this->db->where('a.running_bal >', 0);
 
-
             $query = $this->db->get();
 
             $items = [];
@@ -84,7 +83,7 @@
                 if (!isset($items[$row->sku])) {
                     $items[$row->sku] = [
                         'sku'           => $row->sku,
-                        'inventory_sku' => $row->inventory_sku,
+                        'inventory_sku' => $row->inventory_sku != '' ? $row->inventory_sku : ' - - - ',
                         'name'          => $row->name,
                         'category_name' => $row->category_name,
                         'image_path'    => $row->image_path,
@@ -119,8 +118,69 @@
             }
 
             return [
-                'data' => array_values($items)
+                'data' => array_values($items),
+                'data_for_export' => $this->get_item_for_export($post),
             ];
+        }
+
+        function get_item_for_export($post) {
+            $this->db->select('
+                a.sku,
+                a.inventory_sku,
+                a.name,
+                a.running_bal,
+                a.site_id,
+                b.name as warehouse
+            ');
+            $this->db->from($this->table . ' as a');
+            $this->db->join($this->companyTable . ' as b', 'b.id = a.site_id', 'LEFT');
+
+            // SKU filter (optional)
+            if (!empty($post['sku'])) {
+                $this->db->where_in('a.sku', array_map('strtolower', $post['sku']));
+            }
+
+            // Warehouse filter (optional)
+            if (!empty($post['warehouse'])) {
+                $this->db->where_in('a.site_id', $post['warehouse']);
+            }
+
+            // Always exclude zero stock
+            $this->db->where('a.running_bal >', 0);
+
+            $query = $this->db->get();
+
+            $items = [];
+
+            foreach ($query->result() as $row) {
+
+                if (!isset($items[$row->sku])) {
+                    $items[$row->sku] = [
+                        'sku'           => $row->sku,
+                        'name'          => $row->name,
+                        'inventory_sku' => $row->inventory_sku,
+                        'warehouses'    => [],
+                        'total'         => 0
+                    ];
+                }
+
+                // per-warehouse data
+                $items[$row->sku]['warehouses'][] = [
+                    'warehouse'   => strtoupper($row->warehouse),
+                    'running_bal' => number_format($row->running_bal, 2)
+                ];
+
+                // total per SKU (raw number, formatted later if needed)
+                $items[$row->sku]['total'] += $row->running_bal;
+            }
+
+            // format totals
+            foreach ($items as &$item) {
+                $item['total'] = (int) $item['total']; 
+                // or use number_format($item['total'], 2) if you want decimals
+            }
+
+            return array_values($items);
         }
 
         function get_item_old(){

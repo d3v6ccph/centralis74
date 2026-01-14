@@ -159,6 +159,10 @@
 
                 <div class="col-9">
                     <div id="sku_data">
+                        <button class="btn btn-success mb-3 ml-auto d-block" @click="exportExcel">
+                            Export to Excel
+                        </button>
+
                         <div class="table-header">
                             <div class="row align-items-center justify-content-between mx-0">
                                 <div class="col">
@@ -469,6 +473,7 @@
                 },
                 success: function(response){
                     vm_skus.skus_data = response.data;
+                    vm_skus.data_for_export = response.data_for_export;
 
                     // table.rows().invalidate();
                     // table.clear().rows.add(response.data).draw();
@@ -506,6 +511,71 @@
         el: "#sku_data",
         data: {
             skus_data: [],
+            data_for_export: []
+        },
+        methods: {
+            exportExcel() {
+                if (!this.data_for_export.length) {
+                    alert('No data to export');
+                    return;
+                }
+
+                // Collect all unique warehouses
+                let warehouseSet = new Set();
+                this.data_for_export.forEach(item => {
+                    item.warehouses.forEach(w => {
+                        warehouseSet.add(w.warehouse);
+                    });
+                });
+
+                let warehouseColumns = Array.from(warehouseSet);
+
+                // Build header row
+                let headers = [
+                    'SKU',
+                    'Item Name',
+                    'Inventory SKU',
+                    ...warehouseColumns,
+                    'Total Balance'
+                ];
+
+                // Build rows
+                let rows = this.data_for_export.map(item => {
+                    let row = {
+                        'SKU': item.sku,
+                        'Item Name': item.name,
+                        'Inventory SKU': item.inventory_sku ?? ''
+                    };
+
+                    // initialize warehouse columns with 0
+                    warehouseColumns.forEach(w => {
+                        row[w] = 0;
+                    });
+
+                    // assign running balances
+                    item.warehouses.forEach(w => {
+                        row[w.warehouse] = parseFloat(
+                            String(w.running_bal).replace(/,/g, '')
+                        );
+                    });
+
+                    row['Total Balance'] = item.total;
+
+                    return row;
+                });
+
+                // Convert to worksheet
+                let worksheet = XLSX.utils.json_to_sheet(rows, { header: headers });
+
+                // Create workbook
+                let workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Inventory');
+
+                let filename = `inventory_export_${moment().format('YYYY-MM-DD_HHmm')}.xlsx`;
+
+                // Export
+                XLSX.writeFile(workbook, filename);
+            }
         }
     });
 </script>
