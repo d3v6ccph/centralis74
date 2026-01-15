@@ -13,7 +13,11 @@
             $this->core_layout->addJs("plugins/datatable-buttons/pdfmake.min.js");
             $this->core_layout->addJs("plugins/datatable-buttons/buttons.html5.min.js");
             $this->core_layout->addJs("js/dataTables.rowGroup.min.js");
+
             $this->core_layout->addJs("js/xlsx.full.min.js");
+
+            $this->core_layout->addCss('plugins/swal/sweetalert2.min.css', true);
+            $this->core_layout->addJs('plugins/swal/sweetalert2.all.min.js', true);
 
             $this->core_layout->setPageTitle("Masterfile - Items");
             $this->core_layout->setBodyClass("masterfile Items");
