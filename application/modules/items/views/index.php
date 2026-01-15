@@ -122,7 +122,14 @@
                             </h3>
                         </div>
                     </div>
-                    <div class="m-portlet__head-tools"></div>
+                    <div class="m-portlet__head-tools">
+                        <button class="btn btn-success btnNew" id="btnSync">
+                            <span>
+                                <i class="la la-download"></i>
+                                <span>Sync Item</span>
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -159,9 +166,9 @@
 
                 <div class="col-9">
                     <div id="sku_data">
-                        <button class="btn btn-success mb-3 ml-auto d-block" @click="exportExcel">
-                            Export to Excel
-                        </button>
+                        <div class="row justify-content-between align-items-center mb-3 mx-0">
+                            <button class="btn btn-success ml-auto d-block" @click="exportExcel">Export to Excel</button>
+                        </div>
 
                         <div class="table-header">
                             <div class="row align-items-center justify-content-between mx-0">
@@ -259,56 +266,6 @@
                         </div>
                     </div>
                 </div>
-               
-            </div>
-
-            <!-- Display none -->
-            <div class="m-portlet__body d-none">
-                <div class="row align-items-end mb-4">
-                    <div class="col-md-7">
-                        <div class="row align-items-end">
-                            <div class="col-md-4 col-sm-12">
-                                <label for=""><strong>FILTER BY:</strong></label>
-                                <!-- <select id="select-warehouse" class="form-control" multiple></select> -->
-                            </div>
-                            <div class="col-md-4 col-sm-12 pl-0">
-                                <!-- <select id="select-items" class="form-control" multiple></select> -->
-                            </div>
-                            <div class="col-md-4 col-sm-12 pl-0">
-                                <button class="btn btn-info m-btn m-btn--custom m-btn--icon m-btn--air m-btn--pill" onclick="searchItem()">
-                                    <span>
-                                        <i class="la la-search"></i>
-                                        <span>
-                                            Search
-                                        </span>
-                                    </span>
-                                </button>
-
-                                <button class="btn btn-warning m-btn m-btn--custom m-btn--icon m-btn--air m-btn--pill text-white" onclick="reset()">
-                                    <span>
-                                        <i class="flaticon-refresh"></i>
-                                        <span>
-                                            Clear
-                                        </span>
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-5">
-                        <div class="d-flex align-items-center justify-content-end" style="gap: 5px">
-                            <button id="export-excel" class="btn btnNew btn-success m-btn m-btn--custom m-btn--icon m-btn--air" disabled>EXCEL</button>
-                            <button id="export-pdf" class="btn btnNew btn-success m-btn m-btn--custom m-btn--icon m-btn--air" disabled>PDF</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="m_datatable m-datatable m-datatable--default m-datatable--loaded m-datatable--scroll">
-                    <table class="table table-striped table-bordered" id="table-items" width="100%">
-                        <thead></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
             </div>
         </div>
     </div>
@@ -318,7 +275,6 @@
     var _currentActions = <?php echo json_encode($actions); ?>;
     var _csrf_token = "<?php echo $this->security->get_csrf_token_name(); ?>";
     var _csrf_hash = "<?php echo $this->security->get_csrf_hash(); ?>";
-    var table;
     let _sku = null;
 
     $(document).ready( function(){
@@ -363,99 +319,6 @@
         });
     }
 
-    table = $("#table-items").DataTable({
-        dom: "rtlip",
-        data: [],
-        columns: [
-            { title: '', data: null, width: '5%', orderable: false,
-                render: function(data, type, row, meta){
-                    var html = '';
-
-                    if(row.image){
-                        html += `<a class='image-link1' href='${row.image_path}' data-lightbox='${row.image}'>`;
-                            html += `<img class='image' src='${row.image_path}' alt='${row.image}' width='50px'/>`;
-                        html += '</a>';
-                    }else{
-                        var img = "<?=base_url('uploads/images/no image.png') ?>";
-
-                        html += `<a class='image-link2' href='${img}' data-lightbox='no image.png'>`;
-                            html += `<img class='image' src='${img}' alt='no image.png' width='50px' style="border-radius: 50%" />`;
-                        html += '</a>';
-                    }
-
-                    return html;
-                }
-            },
-            { title: 'Warehouse', data: 'warehouse', width: '10%',
-                render: function(data){
-                    return `<strong>${ data.toUpperCase() }</strong>`;
-                }
-            },
-            { title: 'Stock Code', data: 'sku', width: '10%',
-                render: function(data){
-                    return data.toUpperCase();
-                }
-            },
-            { title: 'Inventory Code', data: 'inventory_sku', width: '10%',
-                render: function(data){
-                    return data ? data : ' --- ';
-                }
-            },
-            { title: 'Item Description', data: 'name', width: '30%',
-                render: function(data){
-                    return data.toUpperCase();
-                }
-            },
-            { title: 'Category', data: 'category_name', width: '10%',
-                render: function(data){
-                    return data ? data.toUpperCase() : ' --- ';
-                }
-            },
-            { title: 'In', data: 'qty_in', width: '5%' },
-            { title: 'Out', data: 'qty_out', width: '5%' },
-            { title: 'Running Balance', data: 'running_bal', width: '13%' },
-        ],
-        buttons:[
-            { 
-                extend: "pdfHtml5",
-                title: `Central Inventory - Generated Item as of ` + moment().format('LL'),
-                exportOptions: {
-                    columns: [1,2,3,4,5,6,7,8]
-                },
-                customize: function (win) {
-                    var tblBody = win.content[1].table.body;
-
-                    for (i = 1; i < tblBody.length; i++) {
-                        win.content[1].table.body[i][0].alignment = 'center';
-                        win.content[1].table.body[i][1].alignment = 'center';
-                        win.content[1].table.body[i][2].alignment = 'center';
-                        win.content[1].table.body[i][3].alignment = 'center';
-                        win.content[1].table.body[i][4].alignment = 'center';
-                        win.content[1].table.body[i][5].alignment = 'center';
-                        win.content[1].table.body[i][6].alignment = 'center';
-                        win.content[1].table.body[i][7].alignment = 'center';
-                    }
-                }
-            },
-            { 
-                extend: "excelHtml5",
-                title: `Central Inventory - Generated Item as of ` + moment().format('LL'),
-                exportOptions: {
-                    columns: [1,2,3,4,5,6,7,8]
-                },
-                customize: function(xlsx){
-                    var sheet = xlsx.xl.worksheets['sheet1.xml'];
-
-                    var col = $('col', sheet);
-
-                    $('row c[r^="C"]', sheet).each(function() {
-                        $(this).attr('s', '55');
-                    });
-                }
-            },
-        ],
-    });
-
     function searchItem(){
         var sku = $("#select-items").val();
         var warehouse = $("#select-warehouse").val();
@@ -475,9 +338,6 @@
                     vm_skus.skus_data = response.data;
                     vm_skus.data_for_export = response.data_for_export;
 
-                    // table.rows().invalidate();
-                    // table.clear().rows.add(response.data).draw();
-
                     if(response.data.length > 0){
                         $("#export-excel").prop('disabled', false);
                         $("#export-pdf").prop('disabled', false);
@@ -492,20 +352,120 @@
         }
     }
 
-    $("#export-excel").on('click', function(){
-        table.button('.buttons-excel').trigger();
-    });
-    
-    $("#export-pdf").on('click', function(){
-        table.button('.buttons-pdf').trigger();
-    });
-
     function reset(){
         $("#select-items").val("").trigger('change');
         $("#select-warehouse").val("").trigger('change');
 
         items();
     }
+
+    $(document).on('click', "#btnSync", function(){
+        const warehouses = [];
+        
+        $.ajax({
+            url: '<?= base_url('warehouse/get_all_warehouse') ?>',
+            type: 'POST',
+            dataType: 'JSON',
+            data: {
+                _csrf_token: _csrf_hash
+            },
+            global: false,
+            success: function(res) {
+
+                if (!res.length) {
+                    toastr.warning('No warehouses found', 'Sync');
+                    return;
+                }
+
+                res.forEach(wh => {
+                    warehouses.push({
+                        id: wh.id,
+                        name: wh.name
+                    });
+                });
+
+                let total = warehouses.length;
+                let completed = 0;
+
+                // SHOW LOADER
+                Swal.fire({
+                    title: 'Syncing Warehouses',
+                    html: `
+                        <div id="sync-progress">
+                            <strong>0 / ${total}</strong><br>
+                            Please wait while data is being synchronized...
+                        </div>
+                    `,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // =================================================
+
+                let time = 0;
+                
+                warehouses.forEach(warehouse => {
+                    setTimeout(() => {
+                        $.ajax({
+                            url: '<?=base_url('warehouse/check_available') ?>',
+                            type: 'POST',
+                            dataType: 'JSON',
+                            data: {
+                                _csrf_token: _csrf_hash,
+                                id: warehouse.id
+                            },
+                            global: false,
+                            success: function(response) {
+                                if(response.state) {
+                                    toastr.success(`Warehouse "${warehouse.name.toUpperCase()}" Available for Sync`, 'Sync', 8000);
+
+                                    $.ajax({
+                                        url: '<?=base_url('warehouse/sync_warehouse_data') ?>/' + warehouse.id,
+                                        type: 'GET',
+                                        dataType: 'JSON',
+                                        global: false,
+                                        success: function(data) {
+                                            if(data.state) {
+                                                toastr.success(data.msg, 'Sync');
+                                            } else {
+                                                toastr.error(data.msg, 'Sync');
+                                            }
+
+                                            done();
+                                        }, 
+                                    });
+                                } else {
+                                    toastr.error(`Warehouse "${warehouse.name.toUpperCase()}" is unavailable for syncing data.`, 'Sync', 8000);
+                                    done();
+                                }
+                            }
+                        });
+                    }, time);
+
+                    time += 300;
+                });
+
+                function done() {
+                    completed++;
+
+                    $('#sync-progress strong').text(`${completed} / ${total}`);
+
+                    if (completed === total) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sync Complete',
+                            text: 'All warehouses have finished syncing.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                }
+            }
+        });
+    });
 
     const vm_skus = new Vue({
         el: "#sku_data",
