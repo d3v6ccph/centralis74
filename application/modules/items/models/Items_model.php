@@ -241,4 +241,22 @@
 
             return array('results' => $result);
         }
+
+        function get_last_sync_date() {
+            $this->db->select('MAX(sync_update_date) as last_sync_date');
+            $this->db->from($this->table);
+            $query = $this->db->get();
+
+            if ($query->num_rows() > 0 && $query->row()->last_sync_date) {
+                return [
+                    'state' => true,
+                    'last_sync_date' => $query->row()->last_sync_date
+                ];
+            }
+
+            return [
+                'state' => false,
+                'last_sync_date' => null
+            ];
+        }
     }
