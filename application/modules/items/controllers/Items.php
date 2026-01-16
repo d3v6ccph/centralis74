@@ -55,4 +55,9 @@
             ->set_content_type('json')
             ->set_output(json_encode($data));
         }
+
+        function get_last_sync_date(){
+            $data = $this->items->get_last_sync_date();
+            $this->output->set_content_type('json')->set_output(json_encode($data));
+        }
     }

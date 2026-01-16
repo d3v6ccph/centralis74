@@ -188,7 +188,8 @@
         function save_sync($id, $arr = array(), $warehouse){
             $result = array();
 
-            $date = date('Y-m-d H:i:s');
+            $newDate = new DateTime('now', new DateTimeZone('Asia/Manila'));
+            $date = $newDate->format('Y-m-d H:i:s');
             $count = count($arr);
 
             $this->db->where('site_id', $id);

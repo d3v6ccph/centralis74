@@ -123,12 +123,18 @@
                         </div>
                     </div>
                     <div class="m-portlet__head-tools">
-                        <button class="btn btn-success btnNew" id="btnSync">
-                            <span>
-                                <i class="la la-download"></i>
-                                <span>Sync Item</span>
-                            </span>
-                        </button>
+                        <div class="row align-items-center justify-content-end mx-0">
+                            <div class="text-danger mr-3 m--font-boldest">
+                                Last Sync Date: <span id="last_sync_date"><span>
+                            </div>    
+                        
+                            <button class="btn btn-success" id="btnSync">
+                                <span>
+                                    <i class="la la-download"></i>
+                                    <span>Sync Item</span>
+                                </span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -278,6 +284,24 @@
     let _sku = null;
 
     $(document).ready( function(){
+        function get_last_sync_date(){
+            $.ajax({
+                url: '<?=base_url('items/get_last_sync_date') ?>',
+                type: 'POST',
+                dataType: 'JSON',
+                data: {
+                    _csrf_token: _csrf_hash,
+                },
+                success: function(response){
+                    if(response.state){
+                        $("#last_sync_date").text( moment(response.last_sync_date).format('MMM DD, YYYY hh:mm a'));
+                    }else{
+                        $("#last_sync_date").text('No sync yet');
+                    }
+                }
+            });
+        }
+
         $("#select-warehouse").select2({
             placeholder: "Select Warehouse (Optional)",
             width: "100%",
@@ -294,6 +318,7 @@
         });
 
         items();
+        get_last_sync_date();
     });
 
     function items(id = 0, select2Destroy = false){
