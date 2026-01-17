@@ -284,23 +284,6 @@
     let _sku = null;
 
     $(document).ready( function(){
-        function get_last_sync_date(){
-            $.ajax({
-                url: '<?=base_url('items/get_last_sync_date') ?>',
-                type: 'POST',
-                dataType: 'JSON',
-                data: {
-                    _csrf_token: _csrf_hash,
-                },
-                success: function(response){
-                    if(response.state){
-                        $("#last_sync_date").text( moment(response.last_sync_date).format('MMM DD, YYYY hh:mm a'));
-                    }else{
-                        $("#last_sync_date").text('No sync yet');
-                    }
-                }
-            });
-        }
 
         $("#select-warehouse").select2({
             placeholder: "Select Warehouse (Optional)",
@@ -320,6 +303,24 @@
         items();
         get_last_sync_date();
     });
+
+    function get_last_sync_date(){
+        $.ajax({
+            url: '<?=base_url('items/get_last_sync_date') ?>',
+            type: 'POST',
+            dataType: 'JSON',
+            data: {
+                _csrf_token: _csrf_hash,
+            },
+            success: function(response){
+                if(response.state){
+                    $("#last_sync_date").text( moment(response.last_sync_date).format('MMM DD, YYYY hh:mm a'));
+                }else{
+                    $("#last_sync_date").text('No sync yet');
+                }
+            }
+        });
+    }
 
     function items(id = 0, select2Destroy = false){
         var url = "";
@@ -486,6 +487,8 @@
                             timer: 2000,
                             showConfirmButton: false
                         });
+
+                        get_last_sync_date();
                     }
                 }
             }
