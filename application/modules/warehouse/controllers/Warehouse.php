@@ -110,4 +110,9 @@
             ->set_content_type('json')
             ->set_output(json_encode($result));
         }
+
+        public function get_all_warehouse() {
+            $data = $this->warehouse->get_all_warehouse();
+            $this->output->set_content_type('json')->set_output(json_encode($data));
+        }
     }

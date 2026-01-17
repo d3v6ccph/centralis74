@@ -188,7 +188,8 @@
         function save_sync($id, $arr = array(), $warehouse){
             $result = array();
 
-            $date = date('Y-m-d H:i:s');
+            $newDate = new DateTime('now', new DateTimeZone('Asia/Manila'));
+            $date = $newDate->format('Y-m-d H:i:s');
             $count = count($arr);
 
             $this->db->where('site_id', $id);
@@ -270,5 +271,13 @@
             }
 
             return $result;
+        }
+
+        function get_all_warehouse() {
+            $this->db->select('id, name, code, path');
+            $this->db->from($this->table);
+            $this->db->where('status', 1);
+            $query = $this->db->get();
+            return $query->result_array();
         }
     }
