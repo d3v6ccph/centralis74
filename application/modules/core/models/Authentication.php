@@ -3,8 +3,11 @@ class Authentication extends CI_Model{
 	protected $usersTable = "tblusers";
 	protected $roleAclTable = "user_role_acl";
 	private $user_data = array();
+	protected $mdb;
+
 	function __construct(){
 		parent::__construct();
+		$this->mdb = $this->load->database('master', true);
 		$this->user_data = $this->session->userdata("logged_in");
 	}
 	public function doRedirect(){
@@ -58,37 +61,38 @@ class Authentication extends CI_Model{
 	public function getUserData($include = array()){
 		$currentUser = $this->getCurrentUser();
 		if($currentUser){
-			$user = $currentUser["emp_id"];
 			if($include){
 				$selectQuery = implode(",",$include);
-				$this->db->select($selectQuery);
+				$this->mdb->select($selectQuery);
 			}
-			$this->db->where("id", $currentUser["emp_id"]);
-			$this->db->from("tblemployees");
-			$query = $this->db->get();
+			$this->mdb->where("id", $currentUser["emp_id"]);
+			$this->mdb->from("tblemployees");
+			$query = $this->mdb->get();
 			if($query->num_rows() > 0){
 				return $query->row_array();
 			}else{
 				return false;
-			}			
+			}
 		}else{
 			return false;
 		}
 	}
 	public function getUserProfile(){
 		$include = array(
-			"id", "idno", "biometricno", "lastname", 
-			"firstname", "middlename", "email", "position", 
-			"employee_status", "curr_addr", "str_addr", "city", 
+			"id", "idno", "biometricno", "lastname",
+			"firstname", "middlename", "email", "position",
+			"employee_status", "curr_addr", "str_addr", "city",
 			"postal", "pic_filename"
 		);
 		$user = $this->getUserData($include);
 		if($user){
 			foreach($user as $key => $value){
 				if($key == "pic_filename"){
-					$findImage = realpath("uploads/images/{$value}");
+					$findImage = realpath("../web/uploads/files/images/employee_files/empcode_{$user['id']}/{$value}");
 					$nValue = ($value && file_exists($findImage))? $value: "defaultAvatar.png";
-					$user[$key] = base_url("uploads/images/{$nValue}");						
+					$tempUrl = ($value && file_exists($findImage))?
+						base_url("../web/uploads/files/images/employee_files/empcode_{$user['id']}/{$nValue}"): base_url("uploads/images/{$nValue}");
+					$user[$key] = $tempUrl;
 				}
 			}
 			$userName = $this->getUserName($user);

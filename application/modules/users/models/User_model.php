@@ -3,6 +3,7 @@
 class User_model extends CI_Model
 {
     private $timestamp = null;
+    protected $employeeTable = "gccmaster.tblemployees";
 
     function __construct()
     {
@@ -45,7 +46,7 @@ class User_model extends CI_Model
         $get = $this->input->get();
         $resultarray = array();
         if (isset($get['q'])) {
-            $this->db->from('tblemployees');
+            $this->db->from($this->employeeTable.' tblemployees');
             $this->db->where('tblemployees.employee_status', 'Active');
             $this->db->order_by('firstname', 'asc');
             $this->db->like('firstname', $get['q']);
@@ -64,7 +65,7 @@ class User_model extends CI_Model
 
 
         } else {
-            $this->db->from('tblemployees');
+            $this->db->from($this->employeeTable.' tblemployees');
             $this->db->where('tblemployees.employee_status', 'Active');
             $this->db->order_by('firstname', 'asc');
             $query = $this->db->get();
@@ -172,8 +173,8 @@ class User_model extends CI_Model
         $searchFields = "CONCAT(users.email, employees.firstname, employees.lastname, employees.middlename)";
 
         $joinArr = array(
-            array("table" => "tblemployees employees", "condition" => "users.emp_id = employees.id", "option" => "INNER"),
-            array("table" => "tblemployees employees2", "condition" => "users.suspended_by = employees2.id", "option" => "LEFT")
+            array("table" => $this->employeeTable." employees", "condition" => "users.emp_id = employees.id", "option" => "INNER"),
+            array("table" => $this->employeeTable." employees2", "condition" => "users.suspended_by = employees2.id", "option" => "LEFT")
         );
         $where = array("users.is_suspended" => 1);
 
@@ -210,7 +211,7 @@ class User_model extends CI_Model
         $searchFields = "CONCAT(users.email, employees.firstname, employees.lastname, employees.middlename, users.username)";
 
         $joinArr = array(
-            array("table" => "tblemployees employees", "condition" => "users.emp_id = employees.id", "option" => "INNER"),
+            array("table" => $this->employeeTable." employees", "condition" => "users.emp_id = employees.id", "option" => "INNER"),
         );
         $where = "users.is_suspended = 0 AND (employees.employee_status IN('Active') OR employees.employee_status IS NULL)";
 
@@ -264,7 +265,7 @@ class User_model extends CI_Model
         $id = $data->id;
         $reset_pin = $data->reset_pin;
         unset($data->id, $data->reset_pin);
-        $emp_data = $this->db->get_where("tblemployees",array("id"=>$id))->row();
+        $emp_data = $this->db->get_where($this->employeeTable, array("id"=>$id))->row();
         $emp_name = $emp_data->firstname." ".$emp_data->lastname;
         
         $resultSet = array("success" => false, "message" => $this->db->error());
@@ -292,7 +293,7 @@ class User_model extends CI_Model
         $id = $data->id;
         $old_pin = $data->old_pin;
         $new_pin = $data->new_pin;
-        $emp_data = $this->db->get_where("tblemployees",array("id", $id))->row();
+        $emp_data = $this->db->get_where($this->employeeTable, array("id", $id))->row();
         $emp_name = $emp_data->firstname." ".$emp_data->lastname;
         $resultSet = array("success" => false, "message" => $this->db->error());
 
@@ -340,7 +341,7 @@ class User_model extends CI_Model
             $where = array("emp_id" => $post['id']);
             $updatePin = $this->db->update("tblusers", $data, $where);
             $reset_pin = $this->db->get_where("tblusers", $where)->row();
-            $emp_details = $this->db->get_where("tblemployees", array("id"=>$post['id']))->row();
+            $emp_details = $this->db->get_where($this->employeeTable, array("id"=>$post['id']))->row();
             if($updatePin){
                     $data = array();
                     $data['reset_pin'] = $reset_pin->reset_pin;
