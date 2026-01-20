@@ -4,44 +4,11 @@
 	<i class="la la-arrow-up"></i>
 </div>
 <!-- end::Scroll Top -->
-<!-- start::update password modal -->
-<div class="modal fade" id="modal-update_password" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Update password</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-			<form action="<?php echo base_url('core/profile/update_password'); ?>" method="POST" id="form-update_password">
-				<div class="modal-body">
-					<div class="form-group">
-                        <label class="form-control-label">Current Password:</label>
-                        <input type="password" name="current_password" class="form-control" data-validation="required">
-                    </div>
-					<div class="form-group">
-                        <label class="form-control-label">New Password:</label>
-                        <input type="password" name="new_password" class="form-control" data-validation="required" data-validation="length" data-validation-length="min8">
-                    </div>
-					<div class="form-group">
-                        <label class="form-control-label">Confirm Password:</label>
-                        <input type="password" name="new_password_confirmation" class="form-control" data-validation="confirmation">
-                    </div>
-				</div>
-				<div class="modal-footer">
-					<button type="submit" class="btn btn-primary btn-submit btnSave">Update</button>
-					<button class="btn btn-danger" data-dismiss="modal">Cancel</button>
-				</div>
-			</form>
-        </div>
-    </div>
-</div>
 <!-- end::update password modal -->
 <?php
 	$privilegeName = $this->core_layout->getPrivilegeName();
 	$_actions = array();
-	if($privilegeName){				
+	if($privilegeName){
 		$actions = $this->core_layout->generatePrivilegeAction();
 		if(isset($actions[$privilegeName]) && $actions[$privilegeName]){
 			$_actions = $actions[$privilegeName];
