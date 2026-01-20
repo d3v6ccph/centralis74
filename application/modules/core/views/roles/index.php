@@ -21,9 +21,25 @@
 					</div>
 				</div>
 				<div class="m-portlet__body">
-					<!--begin: Datatable -->
+					<div class="m-form m-form--label-align-right m--margin-top-20 m--margin-bottom-30">
+						<div class="row align-items-center">
+							<div class="col-xl-8 order-2 order-xl-1">
+								<button type="button" id="user_role-new" class="m-portlet__nav-link btn m-btn--square btn-success btnNew"  data-toggle="modal" data-target="#modal-user_role-new"><i class="fa fa-plus"></i> New </button>
+							</div>
+							<div class="col-xl-4 order-1 order-xl-2 m--align-right">
+								<div class="m-input-icon m-input-icon--left" style="border: 1px solid #c3c3c3;">
+									<input type="text" class="form-control m-input m-input--solid" placeholder="Search..." id="generalSearch">
+									<span class="m-input-icon__icon m-input-icon__icon--left">
+										<span>
+											<i class="la la-search"></i>
+										</span>
+									</span>
+								</div>
+							</div>
+						</div>
+						<!--begin: Datatable -->
 						<div class="m_datatable m-datatable m-datatable--default m-datatable--loaded m-datatable--scroll">
-							<table class="table table-striped table-bordered" id="table-roles" width="100%">
+							<table class="table table-striped table-bordered" id="table-roles" style="width: 100%;">
 								<thead>
 									<tr>
 										<th>Name</th>
@@ -36,7 +52,8 @@
 								</tbody>
 							</table>
 						</div>
-					<!--end: Datatable -->
+						<!--end: Datatable -->
+					</div>
 				</div>
 			</div>
 			<!--end::Portlet-->
@@ -155,16 +172,23 @@
 	var _modalUserRoleDelete = $("#modal-user_role-delete");
 	var _modalUserRoleAssign = $("#modal-user_role-assign");
 	var _modalUserRolePrivilege = $("#modal-user_role-privilege");
-	
+	var search_val = "";
+
 	var _dtUserRole = $("#table-roles").DataTable({
 		dom: '<"toolbar">frtlip',
 		serverSide: true,
 		processing: true,
+		searching: false,
 		ajax: {
 			url: "<?php echo base_url("core/roles/get_roles_list"); ?>",
 			type: "post",
 			dataType: "json",
-			data: {  _csrf_token : _csrf_hash }
+			global: false,
+			data: function (d) {
+				d.csrf_token = _csrf_hash;
+				d.search['value'] = search_val;
+				return d;
+			},
 		}, columns: [
 			{ data: "name", width: "25%" },
 			{ data: "description", width: "50%" },
@@ -224,7 +248,6 @@
 		else{ _html = "<span class='btn btn-danger m-btn m-btn--icon m-btn--icon-only btn-sm'><i class='la la-remove'></i></span>"; }
 		return _html;
 	}
-	$("div.toolbar").html('<button type="button" id="user_role-new" class="m-portlet__nav-link btn m-btn--square btn-success btnNew"  data-toggle="modal" data-target="#modal-user_role-new"><i class="fa fa-plus"></i> New </button>');
 
 	$.validate({
 		form : '#form-roles',
@@ -239,10 +262,9 @@
 	    		},
 	    		success: function(data){
 					if(data.response){
-						_dtUserRole.draw();
 						toastr.success(data.toastr_msg, "Added User Role", 5000);
 						$(_modalUserRole).modal("hide");
-						setTimeout(function(){ window.location.reload(); }, 1000);
+						_dtUserRole.ajax.reload();
 					}else{
 						toastr.error(data.toastr_msg, "Error User Role", 5000);
 					}
@@ -266,10 +288,9 @@
 	    		},
 	    		success: function(data){
 					if(data.response){
-						_dtUserRole.draw();
 						toastr.success(data.toastr_msg, "Update User Role", 5000);
 						$(_modalUserRoleEdit).modal("hide");
-						setTimeout(function(){ window.location.reload(); }, 1000);
+						_dtUserRole.ajax.reload(null, false);
 					}else{
 						toastr.error(data.toastr_msg, "Error User Role", 5000);
 					}
@@ -343,18 +364,17 @@
 				},
 				success: function(json){
 					if(json.response){
-						_dtUserRole.draw();
 						toastr.success(json.toastr_msg, "Remove User Role", 5000);
 						$(_modalUserRoleDelete).modal("hide");
-						setTimeout(function(){ window.location.reload(); }, 1000);
+						_dtUserRole.ajax.reload(null, false);
 					}else{ toastr.error(json.toastr_msg, "Error User Role", 5000); }
 					if(typeof _btnSubmit !== "undefined"){
 						if(_btnSubmit.hasClass("m-btn--custom m-loader m-loader--light m-loader--right")){
-							_btnSubmit.removeClass("m-btn--custom m-loader m-loader--light m-loader--right");							
+							_btnSubmit.removeClass("m-btn--custom m-loader m-loader--light m-loader--right");
 						}
 					}
 				}
-			});			
+			});
 		}
 	});
 	jQuery(document).on("click", "#table-roles .btnAssignRole", function(){
@@ -368,7 +388,7 @@
 				if(json.response){
 					_modalUserRoleAssign.find(".modal-content").empty().append(json.html);
 					var treeRole = _modalUserRoleAssign.find("#tree_role-list");
-					$(treeRole).jstree({	
+					$(treeRole).jstree({
 						core: {
 							data: json.data,
 							check_callback : true,
@@ -476,7 +496,7 @@
 						
 						var jsTreeParent = $(this).find(".no_checkbox");
 						if(typeof jsTreeParent !== "undefined" && jsTreeParent.length > 0){
-							jsTreeParent.find(".jstree-checkbox").remove();							
+							jsTreeParent.find(".jstree-checkbox").remove();
 						}
 					});
 					
@@ -512,5 +532,10 @@
 				}
 			});
 		}
+	});
+
+	$('#generalSearch').donetyping(function (callback) {
+		search_val = $(this).val();
+		_dtUserRole.ajax.reload(null, false);
 	});
 </script>

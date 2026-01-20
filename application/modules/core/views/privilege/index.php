@@ -17,9 +17,25 @@
 					</div>
 				</div>
 				<div class="m-portlet__body">
-					<!--begin: Datatable -->
+					<div class="m-form m-form--label-align-right m--margin-top-20 m--margin-bottom-30">
+						<div class="row align-items-center">
+							<div class="col-xl-8 order-2 order-xl-1">
+								<button id="privilege-new" type="button" class="m-portlet__nav-link btn m-btn--square btn-success btnNew"  data-toggle="modal" data-target="#modal-privilege-new"><i class="fa fa-plus"></i> New </button>
+							</div>
+							<div class="col-xl-4 order-1 order-xl-2 m--align-right">
+								<div class="m-input-icon m-input-icon--left" style="border: 1px solid #c3c3c3;">
+									<input type="text" class="form-control m-input m-input--solid" placeholder="Search..." id="generalSearch">
+									<span class="m-input-icon__icon m-input-icon__icon--left">
+										<span>
+											<i class="la la-search"></i>
+										</span>
+									</span>
+								</div>
+							</div>
+						</div>
+						<!--begin: Datatable -->
 						<div class="m_datatable m-datatable m-datatable--default m-datatable--loaded m-datatable--scroll">
-							<table class="table table-striped table-bordered" id="table-privilege" width="100%">
+							<table class="table table-striped table-bordered" id="table-privilege" style="width:100%;">
 								<thead>
 									<tr>
 										<th>Name</th>
@@ -33,7 +49,8 @@
 								</tbody>
 							</table>
 						</div>
-					<!--end: Datatable -->
+						<!--end: Datatable -->
+					</div>
 				</div>
 			</div>
 			<!--end::Portlet-->
@@ -142,16 +159,23 @@ var _csrf_hash = "<?php echo $this->security->get_csrf_hash(); ?>";
 var _tablePrivilege = $("#table-privilege");
 var _modalPrivigeEdit = $("#modal-privilege-edit");
 var _modalPrivigeDelete = $("#modal-privilege-delete");
+var search_val = "";
 
 var _dtPrivilege = $("#table-privilege").DataTable({
 		dom: '<"toolbar">frtlip',
 		serverSide: true,
 		processing: true,
+		searching: false,
 		ajax: {
 			url: "<?php echo base_url("core/privilege/get_privilege_list"); ?>",
 			type: "post",
 			dataType: "json",
-			data: {  _csrf_token : _csrf_hash }
+			global: false,
+			data: function (d) {
+				d.csrf_token = _csrf_hash;
+				d.search['value'] = search_val;
+				return d;
+			},
 		}, columns: [
 			{ data: "name", width: "20%" },
 			{ data: "label", width: "30%" },
@@ -179,9 +203,6 @@ var _dtPrivilege = $("#table-privilege").DataTable({
 		}
 	});
 
-var _htmlContent = '<button id="privilege-new" type="button" class="m-portlet__nav-link btn m-btn--square btn-success btnNew"  data-toggle="modal" data-target="#modal-privilege-new"><i class="fa fa-plus"></i> New </button>';
-$("div.toolbar").html(_htmlContent);
-
 $.validate({
 	form : '#form-privilege',
 	lang: 'en',
@@ -199,10 +220,9 @@ $.validate({
 			},
 			success: function(data){
 				if(data.response){
-					_dtPrivilege.draw();
 					toastr.success(data.toastr_msg, "Added Privilege", 5000);
 					$("#modal-privilege-new").modal("hide");
-					setTimeout(function(){ window.location.reload(); }, 1000);
+					_dtPrivilege.ajax.reload();
 				}else{
 					toastr.error(data.toastr_msg, "Error Privilege", 5000);
 				}
@@ -230,10 +250,9 @@ $.validate({
 			},
 			success: function(data){
 				if(data.response){
-					_dtPrivilege.draw();
 					toastr.success(data.toastr_msg, "Update Privilege", 5000);
 					$("#modal-privilege-edit").modal("hide");
-					setTimeout(function(){ window.location.reload(); }, 1000);
+					_dtPrivilege.ajax.reload(null, false);
 				}else{ toastr.error(data.toastr_msg, "Error Privilege", 5000); }
 				if(typeof _btnSubmit !== "undefined"){ _btnSubmit.removeClass("m-btn--custom m-loader m-loader--light m-loader--right"); }
 			}
@@ -325,18 +344,22 @@ jQuery(document).on("click", ".btn-submit-delete", function(){
 			},
 			success: function(json){
 				if(json.response){
-					_dtPrivilege.draw();
 					toastr.success(json.toastr_msg, "Remove Privilege", 5000);
 					$(_modalPrivigeDelete).modal("hide");
-					setTimeout(function(){ window.location.reload(); }, 1000);
+					_dtPrivilege.ajax.reload(null, false);
 				}else{ toastr.error(json.toastr_msg, "Error Privilege", 5000); }
 				if(typeof _btnSubmit !== "undefined"){
 					if(_btnSubmit.hasClass("m-btn--custom m-loader m-loader--light m-loader--right")){
-						_btnSubmit.removeClass("m-btn--custom m-loader m-loader--light m-loader--right");							
+						_btnSubmit.removeClass("m-btn--custom m-loader m-loader--light m-loader--right");
 					}
 				}
 			}
-		});			
+		});
 	}
 });
+
+	$('#generalSearch').donetyping(function (callback) {
+		search_val = $(this).val();
+		_dtPrivilege.ajax.reload(null, false);
+	});
 </script>

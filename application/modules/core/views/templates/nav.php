@@ -49,7 +49,6 @@
 <div id="m_header_topbar" class="m-topbar  m-stack m-stack--ver m-stack--general">
 	<div class="m-stack__item m-topbar__nav-wrapper">
 		<ul class="m-topbar__nav m-nav m-nav--inline">
-			<?php // $this->load->view("core/templates/bell"); ?>
 			<?php $this->load->view("core/templates/user_profile/dropdown_info"); ?>
 		</ul>
 	</div>
