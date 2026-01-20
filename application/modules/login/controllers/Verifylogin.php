@@ -28,7 +28,76 @@
             }
         }
 
-        function check_database($password) {
+        public function check_database($password){
+            $username = $this->input->post('username');
+            //query the database
+            $result = $this->Login_m->login($username, $password);
+            if ($result) {
+                $userResult = $result[0];
+                if ($userResult->is_suspended == 1){
+                    $this->form_validation->set_message('check_database', 'This user account has been suspended.');
+                    return false;
+                } elseif (intval($userResult->lockout) === 1){
+                    $lockedDate = date("F d, Y h:i A", strtotime($userResult->lockout_dt));
+                    $this->form_validation->set_message('check_database', 'Account has been <strong>LOCKED OUT</strong> last '.$lockedDate.', Contact I.T. Team for Assistance.');
+                    return false;
+                }
+                
+                $checkUser = array("emp_id"=>$userResult->emp_id, "username"=>$userResult->username);
+                $tempUser = $this->db->get_where("tblusers", $checkUser);
+                if ($tempUser->num_rows() === 1){
+                    $row = $tempUser->row();
+                    $privileges = $this->Login_m->get_privileges_by_id($row->id);
+                    $sess_array = array(
+                        'id' => $row->id,
+                        'emp_id' => $userResult->emp_id,
+                        'username' => $userResult->username,
+                        'firstname' => $userResult->firstname,
+                        'middlename' => $userResult->middlename,
+                        'lastname' => $userResult->lastname,
+                        'privileges' => $privileges,
+                        'suffix' => $userResult->suffix,
+                        'group_id' => $userResult->group_id,
+                        'email' => $userResult->email,
+                        'company' => $userResult->company_id,
+                        'department' => $userResult->department_id
+                    );
+
+                    $this->session->set_userdata('logged_in', $sess_array);
+                } elseif ($tempUser->num_rows() === 0){
+                    $insertUser = array("emp_id"=>$userResult->emp_id, "group_id"=> $userResult->group_id, "email"=>$userResult->email,
+                    "username"=>$userResult->username, "password"=>$userResult->password, "added_by"=>$userResult->emp_id, "added_date"=>date("Y-m-d H:i:s"));
+                    $added = $this->db->insert("tblusers", $insertUser);
+                    if($added){
+                        $id = $this->db->insert_id();
+                        $privileges = $this->Login_m->get_privileges_by_id($id);
+                        $sess_array = array(
+                            'id' => $id,
+                            'emp_id' => $userResult->emp_id,
+                            'username' => $userResult->username,
+                            'firstname' => $userResult->firstname,
+                            'middlename' => $userResult->middlename,
+                            'lastname' => $userResult->lastname,
+                            'privileges' => $privileges,
+                            'suffix' => $userResult->suffix,
+                            'group_id' => $userResult->group_id,
+                            'email' => $userResult->email,
+                            'company' => $userResult->company_id,
+                            'department' => $userResult->department_id
+                        );
+
+                        $this->session->set_userdata('logged_in', $sess_array);
+                    }
+                }
+
+                return true;
+            }else{
+                $this->form_validation->set_message('check_database', 'Invalid username or password');
+                return false;
+            }
+        }
+
+        function oldcode_20260119_check_database($password) {
             //Field validation succeeded.  Validate against database
             $username = $this->input->post('username');
             //query the database

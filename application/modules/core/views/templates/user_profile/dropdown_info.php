@@ -2,7 +2,7 @@
 <li class="m-nav__item m-topbar__user-profile m-topbar__user-profile--img m-dropdown m-dropdown--medium m-dropdown--arrow m-dropdown--header-bg-fill m-dropdown--align-right m-dropdown--mobile-full-width m-dropdown--skin-light" data-dropdown-toggle="click">
 	<a href="#" class="m-nav__link m-dropdown__toggle">
 		<span class="m-topbar__userpic">
-			<img src="<?php echo (isset($userProfile["pic_filename"]) && $userProfile["pic_filename"])? $userProfile["pic_filename"]: base_url('uploads/papap.jpg'); ?>" alt=""/>
+			<img src="<?php echo (isset($userProfile["pic_filename"]) && $userProfile["pic_filename"])? $userProfile["pic_filename"]: base_url('uploads/images/defaultAvatar.png'); ?>" alt=""/>
 		</span>
 	</a>
 	<div class="m-dropdown__wrapper">
@@ -11,7 +11,7 @@
 			<div class="m-dropdown__header m--align-center" style="background-color: #233d6b;">
 				<div class="m-card-user m-card-user--skin-dark">
 					<div class="m-card-user__pic">
-						<img src="<?php echo (isset($userProfile["pic_filename"]) && $userProfile["pic_filename"])? $userProfile["pic_filename"]: base_url('uploads/papap.jpg'); ?>" alt=""/>
+						<img src="<?php echo (isset($userProfile["pic_filename"]) && $userProfile["pic_filename"])? $userProfile["pic_filename"]: base_url('uploads/images/defaultAvatar.png'); ?>" alt=""/>
 					</div>
 					<div class="m-card-user__details">
 						<span class="m-card-user__name m--font-weight-500"><?php echo (isset($userProfile["display_name"]) && $userProfile["display_name"])? $userProfile["display_name"]: "No Assigned Name"; ?></span>
@@ -38,12 +38,6 @@
 								</span>
 							</a>
 						</li>
-						<li class="m-nav__item">
-							<a href="javascript:void(0);" class="m-nav__link" data-toggle="modal" data-target="#modal-update_password">
-							<i class="m-nav__link-icon flaticon-lock"></i>
-								<span class="m-nav__link-text">Update Password</span>
-							</a>
-						</li>
 						<li class="m-nav__separator m-nav__separator--fit"></li>
 						<li class="m-nav__item">
 							<a href="<?php echo base_url("login/logout"); ?>" class="btn btn--custom-logout text-dark m-btn m-btn--bolder">Logout</a>
@@ -59,4 +53,3 @@
 		.m-portlet.m-portlet--full-height{ border: 1px solid #00000052; }
 	</style>
 </li>
-
