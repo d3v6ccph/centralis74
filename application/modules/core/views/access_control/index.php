@@ -10,20 +10,38 @@
 		<div class="m-portlet__head-tools"></div>
 	</div>
 	<div class="m-portlet__body">
-		<div class="m_datatable m-datatable m-datatable--default m-datatable--loaded m-datatable--scroll">
-			<table class="table table-striped- table-bordered table-hover table-checkable dataTable no-footer dtr-inline" id="table-access_control" width="100%">
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Label</th>
-						<th>Url</th>
-						<th>Identifier</th>
-						<th>Status</th>
-						<th>Action</th>
-					</tr>
-				</thead>
-				<tbody></tbody>
-			</table>
+		<div class="m-form m-form--label-align-right m--margin-top-20 m--margin-bottom-30">
+			<div class="row align-items-center">
+				<div class="col-xl-8 order-2 order-xl-1">
+					<button id="access_control-new" type="button" class="m-portlet__nav-link btn m-btn--square btn-success btnNew"  data-toggle="modal" data-target="#modal-access_control"><i class="fa fa-plus"></i> New </button>
+					<button id="access_control-list" type="button" class="m-portlet__nav-link btn m-btn--square btn-info btnAssign"><i class="fa fa-list"></i> Tree View </button>
+				</div>
+				<div class="col-xl-4 order-1 order-xl-2 m--align-right">
+					<div class="m-input-icon m-input-icon--left" style="border: 1px solid #c3c3c3;">
+						<input type="text" class="form-control m-input m-input--solid" placeholder="Search..." id="generalSearch">
+						<span class="m-input-icon__icon m-input-icon__icon--left">
+							<span>
+								<i class="la la-search"></i>
+							</span>
+						</span>
+					</div>
+				</div>
+			</div>
+			<div class="m_datatable m-datatable m-datatable--default m-datatable--loaded m-datatable--scroll">
+				<table class="table table-striped- table-bordered table-hover table-checkable dataTable no-footer dtr-inline" id="table-access_control" style="width: 100%;">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Label</th>
+							<th>Url</th>
+							<th>Identifier</th>
+							<th>Status</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 </div>
@@ -160,16 +178,23 @@
 	var _modalAccessControlDelete = $("#modal-access_control-delete");
 	var _modalAccessControlList = $("#modal-access_control-list");
 	var _modalAccessControlAction = $("#modal-access_control-actions");
+	var search_val = "";
 
 	var _dtAccessControl = $("#table-access_control").DataTable({
 		dom: '<"toolbar">frtlip',
 		serverSide: true,
 		processing: true,
+		searching: false,
 		ajax: {
 			url: "<?php echo base_url("core/access_control/get_acl_list"); ?>",
 			type: "post",
 			dataType: "json",
-			data: {  _csrf_token : _csrf_hash }
+			global: false,
+			data: function (d) {
+				d.csrf_token = _csrf_hash;
+				d.search['value'] = search_val;
+				return d;
+			},
 		}, columns: [
 			{ data: "name", width: "25%" },
 			{ data: "label", width: "30%" },
@@ -197,9 +222,6 @@
 			if(typeof aclActionUpdate == "function"){ aclActionUpdate(); }
 		}
 	});
-	var _htmlContent = '<button id="access_control-new" type="button" class="m-portlet__nav-link btn m-btn--square btn-success btnNew"  data-toggle="modal" data-target="#modal-access_control"><i class="fa fa-plus"></i> New </button>';
-	_htmlContent += ' <button id="access_control-list" type="button" class="m-portlet__nav-link btn m-btn--square btn-info btnAssign"><i class="fa fa-list"></i> Tree View </button>';
-	$("div.toolbar").html(_htmlContent);
 	
 	jQuery(document).on("click", "#access_control-list", function(){
 		var _self = $(this);
@@ -284,10 +306,9 @@
 	    		},
 	    		success: function(data){
 					if(data.response){
-						_dtAccessControl.draw();
 						toastr.success(data.toastr_msg, "Added Access Control", 5000);
 						$("#modal-access_control").modal("hide");
-						setTimeout(function(){ window.location.reload(); }, 1000);
+						_dtAccessControl.ajax.reload();
 					}else{
 						toastr.error(data.toastr_msg, "Error Access Control", 5000);
 					}
@@ -315,10 +336,9 @@
 	    		},
 	    		success: function(data){
 					if(data.response){
-						_dtAccessControl.draw();
 						toastr.success(data.toastr_msg, "Update Access Control", 5000);
 						$("#modal-access_control-edit").modal("hide");
-						setTimeout(function(){ window.location.reload(); }, 1000);
+						_dtAccessControl.ajax.reload(null, false);
 					}else{ toastr.error(data.toastr_msg, "Error Access Control", 5000); }
 					if(typeof _btnSubmit !== "undefined"){ _btnSubmit.removeClass("m-btn--custom m-loader m-loader--light m-loader--right"); }
 	    		}
@@ -415,18 +435,17 @@
 				},
 				success: function(json){
 					if(json.response){
-						_dtAccessControl.draw();
 						toastr.success(json.toastr_msg, "Remove Access Control", 5000);
 						$(_modalAccessControlDelete).modal("hide");
-						setTimeout(function(){ window.location.reload(); }, 1000);
+						_dtAccessControl.ajax.reload(null, false);
 					}else{ toastr.error(json.toastr_msg, "Error Access Control", 5000); }
 					if(typeof _btnSubmit !== "undefined"){
 						if(_btnSubmit.hasClass("m-btn--custom m-loader m-loader--light m-loader--right")){
-							_btnSubmit.removeClass("m-btn--custom m-loader m-loader--light m-loader--right");							
+							_btnSubmit.removeClass("m-btn--custom m-loader m-loader--light m-loader--right");
 						}
 					}
 				}
-			});			
+			});
 		}
 	});
 	jQuery(document).on("click", "#table-access_control .btnAclAction", function(){
@@ -449,7 +468,7 @@
 					if(typeof _modalContent !== "undefined"){
 						_modalContent.empty().append(json.html);
 						var treeAclAction = _modalAccessControlAction.find("#tree_acl-action");
-						$(treeAclAction).jstree({	
+						$(treeAclAction).jstree({
 							core: {
 								data: json.data,
 								check_callback : true
@@ -478,7 +497,7 @@
 				}
 				if(typeof _self !== "undefined"){
 						if(_self.hasClass("m-btn--custom m-loader m-loader--light m-loader--right")){
-							_self.removeClass("m-btn--custom m-loader m-loader--light m-loader--right");							
+							_self.removeClass("m-btn--custom m-loader m-loader--light m-loader--right");
 						}
 					}
 			}
@@ -515,5 +534,10 @@
 				}
 			});
 		}
+	});
+
+	$('#generalSearch').donetyping(function (callback) {
+		search_val = $(this).val();
+		_dtAccessControl.ajax.reload(null, false);
 	});
 </script>

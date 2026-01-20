@@ -19,25 +19,21 @@
 				<div class="m-portlet__body">
 					<div class="m-form m-form--label-align-right m--margin-top-20 m--margin-bottom-30">
                         <div class="row align-items-center">
-                            <div class="col-xl-8 order-2 order-xl-1">
-                                <div class="form-group m-form__group row align-items-center">
-                                    <div class="col-md-12">
-                                        <a id="user-new" href="javascript:void(0);"
-                                            class="btn btn-success m-btn m-btn--custom m-btn--icon m-btn--air m-btn--pill btnNew btnNewUser" onclick="open_user()">
-                                            <span>
-                                                <i class="la la-plus"></i>
-                                                <span>
-                                                    New
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </div>
+                            <div class="col-xl-8 order-2 order-xl-1">&nbsp;</div>
+							<div class="col-xl-4 order-1 order-xl-2 m--align-right">
+                                <div class="m-input-icon m-input-icon--left" style="border: 1px solid #c3c3c3;">
+                                    <input type="text" class="form-control m-input m-input--solid" placeholder="Search..." id="generalSearch">
+                                    <span class="m-input-icon__icon m-input-icon__icon--left">
+                                        <span>
+                                            <i class="la la-search"></i>
+                                        </span>
+                                    </span>
                                 </div>
                             </div>
 						</div>
 					<!--begin: Datatable -->
 						<div class="m_datatable m-datatable m-datatable--default m-datatable--loaded m-datatable--scroll">
-							<table class="table table-striped table-bordered" id="table-users" width="100%">
+							<table class="table table-striped table-bordered" id="table-users" style="width:100%;">
 								<thead>
 									<tr>
 										<th>Biometric No</th>
@@ -62,7 +58,7 @@
 	</div>
 </div>
 	
-	<div class="modal fade" id="modal_form_user" role="dialog">
+	<div class="modal fade" id="modal_form_user">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -122,7 +118,7 @@
 		</div>
 		<!--begin::Modal-->
 <div class="modal fade" id="modal-user_role-assign">
-	<div class="modal-dialog modal-m" role="document">
+	<div class="modal-dialog modal-m">
 		<div class="modal-content"></div>
 	</div>
 </div>
@@ -133,7 +129,8 @@ var _modalAssignRole = $("#modal-user_role-assign");
 var _currentActions = <?php echo json_encode($actions); ?>;
 var _csrf_token = "<?php echo $this->security->get_csrf_token_name(); ?>";
 var _csrf_hash = "<?php echo $this->security->get_csrf_hash(); ?>";
-	
+var search_val = "";
+
 $("#select2_employee").select2({
     placeholder: 'SELECT AN OPTION',
     width: '100%',
@@ -146,7 +143,6 @@ $("#select2_employee").select2({
     }
 });
 	
-	var search_val = "";
 $("#select2_group").select2({
     placeholder: 'SELECT AN OPTION',
     width: '100%',
@@ -158,17 +154,23 @@ $("#select2_group").select2({
         }
 
     }
-});	
+});
 var _dtUsers = $("#table-users").DataTable({
 	dom: '<"toolbar">frtlip',
 	paging: false,
 	serverSide: true,
 	processing: true,
+	searching: false,
 	ajax: {
 		url: "<?php echo base_url("core/users/get_user_list"); ?>",
 		type: "post",
 		dataType: "json",
-		data: {  _csrf_token : _csrf_hash },
+		global: false,
+		data: function (d) {
+            d.csrf_token = _csrf_hash;
+            d.search['value'] = search_val;
+            return d;
+        },
 		dataFilter: function(response){
 			var _result = JSON.parse(response);
 			var _data = _result.data;
@@ -283,12 +285,12 @@ jQuery(document).on("click", "#modal-user_role-assign #form-users-assign .btn-su
 				if(json.response){
 					toastr.success(json.message, "Assign User Role", 5000);
 					$(_modalAssignRole).modal("hide");
-					setTimeout(function(){ window.location.reload(); }, 1000);
+					_dtUsers.ajax.reload(null, false);
 				}else{
 					toastr.error(json.message, "Assign User Role",  5000);
 				}
 			}
-		});		
+		});
 	}
 });
 	
@@ -322,7 +324,6 @@ function open_user() {
 
                 success: function (data) {
                     if (data.status) {
-
                         _dtUsers.ajax.reload();
                         $("#modal_form_user").modal("hide");
                         toastr.success("User data updated!", "Success", 10000);
@@ -336,6 +337,11 @@ function open_user() {
         },
     });
 }
+
+$('#generalSearch').donetyping(function (callback) {
+    search_val = $(this).val();
+    _dtUsers.ajax.reload(null, false);
+});
 
 </script>
 <!--end::Modal-->
