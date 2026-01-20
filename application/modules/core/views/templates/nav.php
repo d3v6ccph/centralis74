@@ -49,7 +49,7 @@
 <div id="m_header_topbar" class="m-topbar  m-stack m-stack--ver m-stack--general">
 	<div class="m-stack__item m-topbar__nav-wrapper">
 		<ul class="m-topbar__nav m-nav m-nav--inline">
-			<?php $this->load->view("core/templates/bell"); ?>
+			<?php // $this->load->view("core/templates/bell"); ?>
 			<?php $this->load->view("core/templates/user_profile/dropdown_info"); ?>
 		</ul>
 	</div>
@@ -59,7 +59,7 @@
 </div>
 </div>
 </header>
-<!-- END: Header -->		
+<!-- END: Header -->
 <!-- begin::Body -->
 <div class="m-grid__item m-grid__item--fluid m-grid m-grid--ver-desktop m-grid--desktop m-body">
 <!-- BEGIN: Left Aside -->
@@ -76,7 +76,7 @@ data-menu-dropdown="true" data-menu-scrollable="true" data-menu-dropdown-timeout
 
 <?php
 $includes = array("id", "name", "label", "url", "icon", "identifier");
-echo $this->core_layout->getSidebarNavigation($includes, 1); 
+echo $this->core_layout->getSidebarNavigation($includes, 1);
 ?>
 </div>
 <!-- END: Aside Menu -->
